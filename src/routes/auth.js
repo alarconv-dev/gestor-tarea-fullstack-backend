@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const db = require('../config/db');
 
 const router = express.Router();
 
@@ -17,27 +17,31 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
 
     if (existingUser) {
       return res.status(409).json({ message: 'El email ya está registrado' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
 
-    const token = createToken(user._id);
+    const result = db.prepare(
+      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)'
+    ).run(name, email, hashedPassword);
+
+    const token = createToken(result.lastInsertRowid);
 
     return res.status(201).json({
       token,
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
+        id: result.lastInsertRowid,
+        name,
+        email
       }
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Error al registrar usuario' });
+    console.error('ERROR REGISTER:', error.message);
+    return res.status(500).json({ message: error.message });
   }
 });
 
@@ -49,7 +53,7 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 
     if (!user) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
@@ -61,12 +65,12 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const token = createToken(user._id);
+    const token = createToken(user.id);
 
     return res.json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email
       }

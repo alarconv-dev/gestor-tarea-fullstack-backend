@@ -1,8 +1,12 @@
+// protege las rutas de las conexiones APIs
+// dios en que me he metido este codigo solo lo sabe dios y chat xd 
 const jwt = require('jsonwebtoken');
 
 function auth(req, res, next) {
+  // contiene todos los encabezados HTTP req.headers[]
+  // Propiedad donde vive la cabecera Authorization req.headers.authorization
   const authHeader = req.headers.authorization;
-
+ 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Token de autenticación faltante' });
   }

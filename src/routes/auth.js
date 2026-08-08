@@ -1,20 +1,16 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const express = require('express');// framework de nodejs para crear servidores web
+const bcrypt = require('bcryptjs');// contraseña encriptada
+const jwt = require('jsonwebtoken');// token de autenticacion (el guardia de la puerta xd verifica que el usuario tenga acceso a la ruta)
 const db = require('../config/db');
 
 const router = express.Router();
 
 function createToken(userId) {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '3d' });
 }
 
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Nombre, email y contraseña son obligatorios' });
-  }
 
   try {
     const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
@@ -47,10 +43,6 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email y contraseña son obligatorios' });
-  }
 
   try {
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);

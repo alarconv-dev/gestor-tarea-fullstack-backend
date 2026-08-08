@@ -1,5 +1,4 @@
 // protege las rutas de las conexiones APIs
-// dios en que me he metido este codigo solo lo sabe dios y chat xd 
 const jwt = require('jsonwebtoken');
 
 function auth(req, res, next) {

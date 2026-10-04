@@ -1,24 +1,30 @@
-# ⚙️ Gestor de Tareas — Backend API
+# Taskflow API
 
-Servidor RESTful backend diseñado para la aplicación de gestión de tareas. Proporciona autenticación segura, operaciones CRUD para la administración de tareas y persistencia de datos mediante una base de datos NoSQL.
+API REST para autenticación, proyectos, tareas y anotaciones. La persistencia usa SQLite mediante `better-sqlite3`; la base `src/config/database.db` y sus migraciones se inicializan al arrancar.
 
-## 🚀 Tecnologías y Librerías
+## Requisitos
 
-* **Entorno de ejecución:** Node.js
-* **Framework Web:** Express, Cors
-* **Base de Datos:** MySQL
-* **Autenticación:** JSON Web Tokens (JWT) & bcryptjs (encriptación de contraseñas)
-* **Seguridad y Utilidades:** `dotenv`, `cors`
+- Node.js 20 o superior
+- `JWT_SECRET` definido en `backend/.env` (mínimo 32 bytes en producción)
+- `FRONTEND_ORIGIN` con el origen exacto del frontend en producción, por ejemplo `https://app.ejemplo.com`
 
-## 🛠️ Arquitectura y Estructura del Proyecto
+## Ejecución
 
-```text
-backend/
-├── src/
-│   ├── config/        # Configuración de base de datos (db.js)
-│   ├── middleware/    # Middlewares de autenticación y validación
-│   ├── routes/        # Definición de rutas API (authRoutes, taskRoutes)
-│   └── server.js
-├── package-lock.json
-├── package.json
-└── README.md
+```bash
+npm install
+npm run dev
+```
+
+El servidor escucha en `http://localhost:4000`.
+
+## Rutas
+
+- `POST /api/auth/register` y `POST /api/auth/login`
+- `GET`, `POST`, `PUT` y `DELETE /api/projects`
+- `GET`, `POST`, `PUT` y `DELETE /api/tasks`
+- `GET` y `POST /api/tasks/:id/notes`
+- `GET /api/health`
+
+Las rutas de proyectos, tareas y anotaciones requieren un token JWT en `Authorization: Bearer <token>`. Las tareas admiten estados Pendiente, En proceso y Completado, prioridades Baja, Media y Alta, fechas límite y pertenencia opcional a un proyecto.
+
+El registro requiere una contraseña de al menos 12 caracteres. Los endpoints de autenticación limitan los intentos por IP; en desarrollo se permiten los orígenes localhost 3000 y 3001. El frontend usa el proxy de Vite en desarrollo y `/api` en producción; configura un proxy HTTPS hacia el backend para el despliegue.
